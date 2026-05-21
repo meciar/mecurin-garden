@@ -1,0 +1,1451 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mečurin — manažment záhrady</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Manrope:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #efe7d6;
+    --bg-2: #e8dfc9;
+    --paper: #fdf8ec;
+    --paper-2: #f7f0dc;
+    --ink: #2a2419;
+    --ink-soft: #6b5f4a;
+    --ink-faint: #9a8f78;
+    --green: #2f4a2b;
+    --green-soft: #5a7651;
+    --green-pale: #d6e0c8;
+    --rust: #b85d34;
+    --rust-soft: #e0a079;
+    --sun: #d4a032;
+    --rain: #4f7aa3;
+    --rain-pale: #d0dde9;
+    --border: #cdbf9f;
+    --border-soft: #e0d4b8;
+    --shadow-sm: 0 1px 2px rgba(60, 45, 20, 0.06);
+    --shadow: 0 4px 16px rgba(60, 45, 20, 0.08);
+    --shadow-lg: 0 12px 40px rgba(60, 45, 20, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Manrope', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(180, 160, 110, 0.18) 0%, transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(90, 118, 81, 0.12) 0%, transparent 40%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+  }
+
+  /* ---------- HEADER ---------- */
+  header.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--green);
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo .glyph {
+    font-size: 32px;
+    transform: translateY(-2px);
+  }
+  .logo small {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--ink-soft);
+    letter-spacing: 0;
+    margin-top: 4px;
+  }
+
+  .masthead-meta {
+    text-align: right;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .masthead-meta .date {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .masthead-meta .loc {
+    margin-top: 2px;
+  }
+
+  /* ---------- TABS ---------- */
+  nav.tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border-soft);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  nav.tabs button {
+    background: none;
+    border: none;
+    padding: 12px 18px;
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color .2s;
+  }
+  nav.tabs button:hover { color: var(--ink); }
+  nav.tabs button.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+    font-weight: 500;
+  }
+
+  /* ---------- PANEL ---------- */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .section-title .sub {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  /* ---------- WEATHER SUMMARY ---------- */
+  .weather-summary {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 600px) {
+    .weather-summary { grid-template-columns: 1fr; }
+  }
+
+  .weather-block .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .weather-block .value {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .weather-block .value .unit {
+    font-size: 18px;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+  .weather-block .note {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+
+  /* rainfall mini chart */
+  .rainbars {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 60px;
+    margin-top: 12px;
+  }
+  .rainbars .bar {
+    flex: 1;
+    background: var(--rain-pale);
+    border-radius: 3px 3px 0 0;
+    position: relative;
+    min-height: 4px;
+    transition: background .2s;
+  }
+  .rainbars .bar.has-rain { background: var(--rain); }
+  .rainbars .bar.future { background: repeating-linear-gradient(45deg, var(--rain-pale), var(--rain-pale) 4px, transparent 4px, transparent 8px); border: 1px dashed var(--rain); }
+  .rainbars .bar.future.has-rain { background: repeating-linear-gradient(45deg, var(--rain), var(--rain) 4px, transparent 4px, transparent 8px); }
+  .rainbars .bar span {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+  .rainbars .bar .mm {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ---------- RECOMMENDATIONS ---------- */
+  .recs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .rec-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .rec-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--green-soft);
+  }
+  .rec-card.urgent::before { background: var(--rust); }
+  .rec-card.mild::before { background: var(--sun); }
+  .rec-card.skip::before { background: var(--rain); }
+
+  .rec-card .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .rec-card .plant {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .rec-card .plant .icon {
+    margin-right: 6px;
+  }
+  .rec-card .verdict {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--green-pale);
+    color: var(--green);
+  }
+  .rec-card.urgent .verdict { background: #f4d4c4; color: var(--rust); }
+  .rec-card.mild .verdict { background: #f4e4b8; color: #8a6a14; }
+  .rec-card.skip .verdict { background: var(--rain-pale); color: var(--rain); }
+
+  .rec-card .advice {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .rec-card .detail {
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .rec-card .detail b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- PLANTS ---------- */
+  .plant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  .plant-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .plant-card .name {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .plant-card .meta {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .plant-card .meta strong { color: var(--ink); font-weight: 600; }
+  .plant-card .actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+  }
+  .plant-card button.tiny {
+    font-size: 11px;
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .plant-card button.tiny:hover {
+    background: var(--bg-2);
+    color: var(--ink);
+  }
+  .plant-card button.tiny.danger:hover {
+    background: #f4d4c4;
+    border-color: var(--rust);
+    color: var(--rust);
+  }
+
+  /* ---------- LOG ---------- */
+  .log-list {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .log-entry {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry .when {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    color: var(--ink);
+    min-width: 120px;
+  }
+  .log-entry .when .rel {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+  .log-entry .what {
+    flex: 1;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .log-entry .what b { color: var(--ink); font-weight: 600; }
+  .log-entry .amount {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--green);
+    min-width: 60px;
+    text-align: right;
+  }
+  .log-entry button.del {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .log-entry button.del:hover { color: var(--rust); background: #f4d4c4; }
+
+  /* ---------- BUTTONS ---------- */
+  .btn {
+    background: var(--green);
+    color: #fdf8ec;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn:hover { background: #1f3a1d; transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn.ghost {
+    background: transparent;
+    color: var(--green);
+    border: 1px solid var(--green);
+  }
+  .btn.ghost:hover { background: var(--green-pale); }
+  .btn.rust { background: var(--rust); }
+  .btn.rust:hover { background: #9a4c2a; }
+  .btn.full { width: 100%; }
+
+  /* ---------- MODAL ---------- */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(42, 36, 25, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .modal label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    margin-top: 14px;
+    font-weight: 600;
+  }
+  .modal input, .modal select, .modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .modal input:focus, .modal select:focus, .modal textarea:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+  .modal .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .modal .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    justify-content: flex-end;
+  }
+  .modal .helper {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* ---------- SETTINGS ---------- */
+  .settings-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .settings-card label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    margin-top: 16px;
+    font-weight: 600;
+  }
+  .settings-card label:first-of-type { margin-top: 0; }
+  .settings-card input, .settings-card select {
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    width: 100%;
+  }
+  .settings-card .row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .settings-card .row input { flex: 1; }
+  .settings-card .row button { flex-shrink: 0; }
+
+  .city-results {
+    margin-top: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    display: none;
+  }
+  .city-results.show { display: block; }
+  .city-results .city-opt {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .city-results .city-opt:last-child { border-bottom: none; }
+  .city-results .city-opt:hover { background: var(--bg-2); }
+  .city-results .city-opt small { color: var(--ink-soft); display: block; }
+
+  /* ---------- FAB / TOOLBAR ---------- */
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- LOADING ---------- */
+  .loading-pulse {
+    color: var(--ink-faint);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    background: var(--paper);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+  }
+
+  /* ---------- TOAST ---------- */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all .3s;
+    z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<div class="app">
+
+  <header class="masthead">
+    <div>
+      <div class="logo">
+        <span class="glyph">❦</span>
+        <div>
+          Mečurin
+          <small>denník polievania &amp; zrážok</small>
+        </div>
+      </div>
+    </div>
+    <div class="masthead-meta">
+      <div class="date" id="today-date">—</div>
+      <div class="loc" id="today-loc">—</div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-panel="dashboard">Dnes</button>
+    <button class="tab-btn" data-panel="plants">Rastliny</button>
+    <button class="tab-btn" data-panel="log">Denník polievania</button>
+    <button class="tab-btn" data-panel="settings">Nastavenia</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section class="panel active" id="panel-dashboard">
+    <div class="weather-summary" id="weather-summary">
+      <div class="loading-pulse" style="grid-column: 1/-1;">Načítavam počasie…</div>
+    </div>
+
+    <div class="section-title">
+      Odporúčania na dnes
+      <span class="sub">na základe zrážok a tvojich poliatí za posledných 7 dní</span>
+    </div>
+    <div class="recs" id="recs">
+      <div class="loading-pulse" style="grid-column: 1/-1;">Počítam…</div>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <button class="btn rust" onclick="openWaterModal()">+ Zaznamenať poliatie</button>
+    </div>
+  </section>
+
+  <!-- PLANTS -->
+  <section class="panel" id="panel-plants">
+    <div class="toolbar">
+      <button class="btn" onclick="openPlantModal()">+ Pridať rastlinu</button>
+    </div>
+    <div class="plant-grid" id="plant-grid"></div>
+  </section>
+
+  <!-- LOG -->
+  <section class="panel" id="panel-log">
+    <div class="toolbar">
+      <button class="btn rust" onclick="openWaterModal()">+ Zaznamenať poliatie</button>
+    </div>
+    <div id="log-container"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="panel" id="panel-settings">
+    <div class="section-title">Lokalita</div>
+    <div class="settings-card">
+      <label>Aktuálne miesto</label>
+      <div id="current-loc-info" style="font-family:'Fraunces',serif; font-size:18px; margin-bottom: 14px;">—</div>
+
+      <label>Zmeniť mesto</label>
+      <div class="row">
+        <input type="text" id="city-search" placeholder="Napríklad: Bojnice, Trenčín, Bratislava…">
+        <button class="btn ghost" onclick="searchCity()">Hľadať</button>
+      </div>
+      <div class="city-results" id="city-results"></div>
+      <div class="helper">Zrážky sa načítavajú z otvorenej meteorologickej služby Open-Meteo.</div>
+    </div>
+
+    <div class="section-title" style="margin-top: 32px;">Údaje</div>
+    <div class="settings-card">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn ghost" onclick="exportData()">Exportovať dáta (JSON)</button>
+        <button class="btn ghost" onclick="document.getElementById('import-file').click()">Importovať dáta</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="helper" style="margin-top: 12px;">Všetky dáta sú uložené v rámci tejto konverzácie a pretrvávajú medzi reláciami.</div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Plant Modal -->
+<div class="modal-bg" id="plant-modal">
+  <div class="modal">
+    <h2 id="plant-modal-title">Pridať rastlinu</h2>
+    <input type="hidden" id="plant-id">
+
+    <label>Názov</label>
+    <input type="text" id="plant-name" placeholder="napr. Maliny">
+
+    <label>Ikona (emoji)</label>
+    <input type="text" id="plant-icon" placeholder="🌱" maxlength="3">
+
+    <label>Týždenná potreba vody (mm)</label>
+    <input type="number" id="plant-water" min="0" max="100" step="1" value="25">
+    <div class="helper">Bežné hodnoty: levanduľa 10, cesnak 20, jahody/maliny 25-30, bylinky 20</div>
+
+    <label>Slnečné podmienky</label>
+    <select id="plant-sun">
+      <option>Plné slnko</option>
+      <option>Ranné slnko / poludňajší tieň</option>
+      <option>Polotieň</option>
+      <option>Tieň</option>
+    </select>
+
+    <label>Poznámka (voliteľné)</label>
+    <textarea id="plant-notes" rows="2" placeholder="napr. citlivá na sucho počas tvorby plodov"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closePlantModal()">Zrušiť</button>
+      <button class="btn" onclick="savePlant()">Uložiť</button>
+    </div>
+  </div>
+</div>
+
+<!-- Water Modal -->
+<div class="modal-bg" id="water-modal">
+  <div class="modal">
+    <h2>Zaznamenať poliatie</h2>
+
+    <label>Dátum</label>
+    <input type="date" id="water-date">
+
+    <label>Ktoré rastliny?</label>
+    <select id="water-plants" multiple size="6" style="min-height: 120px;"></select>
+    <div class="helper">Podržaním Ctrl/Cmd vyber viac. Ak si polial všetky, vyber všetky.</div>
+
+    <label>Množstvo vody (mm – ekvivalent zrážok)</label>
+    <input type="number" id="water-amount" min="0" max="100" step="1" value="10">
+    <div class="helper">Orientačne: 1 mm = 1 liter na 1 m². Slabé polievanie 5 mm, dôkladné 15-20 mm.</div>
+
+    <label>Poznámka (voliteľné)</label>
+    <textarea id="water-notes" rows="2" placeholder=""></textarea>
+
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeWaterModal()">Zrušiť</button>
+      <button class="btn rust" onclick="saveWater()">Uložiť</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =========================================================================
+// STORAGE SHIM
+// V Claude existuje window.storage. Mimo Claude (statický hosting, lokálny
+// súbor) ho neexistuje – tu ho doplníme localStorage backendom, aby ten
+// istý súbor fungoval všade. Každý používateľ má svoje vlastné dáta v rámci
+// svojho prehliadača.
+// =========================================================================
+if (typeof window.storage === 'undefined') {
+  window.storage = {
+    async get(key) {
+      const v = localStorage.getItem(key);
+      return v !== null ? { key, value: v } : null;
+    },
+    async set(key, value) {
+      localStorage.setItem(key, String(value));
+      return { key, value };
+    },
+    async delete(key) {
+      localStorage.removeItem(key);
+      return { key, deleted: true };
+    },
+    async list(prefix = '') {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix)) keys.push(k);
+      }
+      return { keys, prefix };
+    }
+  };
+}
+
+// =========================================================================
+// STATE & STORAGE
+// =========================================================================
+const STORE_SETTINGS = 'garden:settings';
+const STORE_PLANTS   = 'garden:plants';
+const STORE_LOG      = 'garden:waterlog';
+
+const SCHEMA_VERSION = 3;
+
+const DEFAULT_SETTINGS = {
+  city: 'Šaľa',
+  region: 'Nitriansky kraj, SK',
+  lat: 48.1517,
+  lon: 17.8758,
+  tz: 'Europe/Bratislava',
+  version: SCHEMA_VERSION
+};
+
+const DEFAULT_PLANTS = [
+  // --- Plodová zelenina ---
+  { id: 'p_paprika',  name: 'Paprika',  icon: '🫑', weeklyMm: 28, sun: 'Plné slnko', notes: 'Citlivá na nepravidelné polievanie – môžu praskať plody.' },
+  { id: 'p_rajciny',  name: 'Rajčiny',  icon: '🍅', weeklyMm: 35, sun: 'Plné slnko', notes: 'Polievaj ku koreňom, nie na listy. Mulčuj na udržanie vlhkosti.' },
+  { id: 'p_uhorky',   name: 'Uhorky',   icon: '🥒', weeklyMm: 40, sun: 'Plné slnko', notes: 'Veľmi smädné, plytké korene. Polievaj často a dôkladne.' },
+  { id: 'p_melony',   name: 'Melóny',   icon: '🍈', weeklyMm: 35, sun: 'Plné slnko', notes: 'Pred dozrievaním polievanie obmedz – plody budú sladšie.' },
+  { id: 'p_cuketa',   name: 'Cuketa',   icon: '🥬', weeklyMm: 38, sun: 'Plné slnko', notes: 'Veľké listy odparujú veľa vody. Polievaj ku koreňom, nie na listy.' },
+  { id: 'p_patizon',  name: 'Patizón',  icon: '🎃', weeklyMm: 35, sun: 'Plné slnko', notes: 'Podobné nároky ako cuketa. Dôkladné polievanie 2-3× týždenne.' },
+
+  // --- Strukoviny ---
+  { id: 'p_hrach',    name: 'Hrach',    icon: '🫛', weeklyMm: 25, sun: 'Plné slnko', notes: 'Chladnomilný – v horúčavách polievaj ráno, mulčuj proti vysychaniu.' },
+
+  // --- Koreňová zelenina ---
+  { id: 'p_mrkva',    name: 'Mrkva',    icon: '🥕', weeklyMm: 25, sun: 'Plné slnko', notes: 'Rovnomerné polievanie – nepravidelné spôsobuje praskanie a deformáciu koreňov.' },
+  { id: 'p_petrzlen', name: 'Petržlen', icon: '🌿', weeklyMm: 22, sun: 'Plné slnko', notes: 'Rovnomerná vlhkosť pre nadýchanú vňať a pekné korene.' },
+
+  // --- Ovocie ---
+  { id: 'p_jahody',   name: 'Jahody',   icon: '🍓', weeklyMm: 25, sun: 'Plné slnko', notes: 'Polievaj ráno, vyhýbaj sa zmáčaniu listov a plodov.' },
+
+  // --- Bylinky náročnejšie na vodu ---
+  { id: 'p_bazalka',  name: 'Bazalka',  icon: '🌱', weeklyMm: 25, sun: 'Plné slnko', notes: 'Miluje teplo. Polievaj ráno, nie večer – znižuje riziko hubových chorôb.' },
+  { id: 'p_mata',     name: 'Mäta',     icon: '🍃', weeklyMm: 30, sun: 'Polotieň', notes: 'Smädná a invázna – pestuj radšej v nádobe alebo s koreňovou bariérou.' },
+  { id: 'p_koriander',name: 'Koriander',icon: '🌾', weeklyMm: 22, sun: 'Ranné slnko / poludňajší tieň', notes: 'V horúčavách rýchlo nakvitne. Sej postupne každé 2-3 týždne.' },
+
+  // --- Stredomorské bylinky (znesú sucho) ---
+  { id: 'p_oregano',  name: 'Oregano',  icon: '🪴', weeklyMm: 12, sun: 'Plné slnko', notes: 'Stredomorská bylina, znesie sucho. Nepolievaj často.' },
+  { id: 'p_tymian',   name: 'Tymián',   icon: '🌿', weeklyMm: 10, sun: 'Plné slnko', notes: 'Drobnolistý milovník sucha. Preliatie znáša horšie ako suchú periódu.' },
+  { id: 'p_rozmarin', name: 'Rozmarín', icon: '🌲', weeklyMm: 10, sun: 'Plné slnko', notes: 'Veľmi odolný voči suchu. Citlivý na mokré korene v zime.' }
+];
+
+// Predvolené IDs predošlých verzií – migráciu spustíme len ak má používateľ
+// presne túto sadu (čiže si zoznam neupravoval).
+const V1_PLANT_IDS = ['p_maliny','p_cesnak','p_jahody','p_levandula','p_bylinky'];
+const V2_PLANT_IDS = ['p_paprika','p_rajciny','p_uhorky','p_melony'];
+
+let settings = null;
+let plants = [];
+let waterLog = [];
+let weather = null; // {dates:[], precipPast:[], precipFuture:[], precipToday}
+
+async function loadAll() {
+  // settings
+  try {
+    const r = await window.storage.get(STORE_SETTINGS);
+    settings = r ? JSON.parse(r.value) : null;
+  } catch (e) { settings = null; }
+  if (!settings) {
+    settings = { ...DEFAULT_SETTINGS };
+    await safeSet(STORE_SETTINGS, settings);
+  }
+
+  // plants
+  try {
+    const r = await window.storage.get(STORE_PLANTS);
+    plants = r ? JSON.parse(r.value) : null;
+  } catch (e) { plants = null; }
+  if (!plants) {
+    plants = DEFAULT_PLANTS;
+    await safeSet(STORE_PLANTS, plants);
+  }
+
+  // log
+  try {
+    const r = await window.storage.get(STORE_LOG);
+    waterLog = r ? JSON.parse(r.value) : [];
+  } catch (e) { waterLog = []; }
+
+  // ---- Migrácia na aktuálnu schému ----
+  const storedVersion = (settings && settings.version) || 1;
+  if (storedVersion < SCHEMA_VERSION) {
+    // v1 → vyššia verzia: ak je mesto stále staré predvolené Bojnice, prepíšeme nastavenia
+    if (settings.city === 'Bojnice') {
+      settings = { ...DEFAULT_SETTINGS };
+      await safeSet(STORE_SETTINGS, settings);
+    } else {
+      // Inak len doplníme verziu
+      settings.version = SCHEMA_VERSION;
+      await safeSet(STORE_SETTINGS, settings);
+    }
+    // Ak sú uložené presne predvolené rastliny niektorej staršej verzie (v1 alebo v2),
+    // používateľ ich neupravoval – môžeme ich bezpečne nahradiť novou sadou.
+    const ids = plants.map(p => p.id).sort().join(',');
+    const v1 = [...V1_PLANT_IDS].sort().join(',');
+    const v2 = [...V2_PLANT_IDS].sort().join(',');
+    if (ids === v1 || ids === v2) {
+      plants = DEFAULT_PLANTS;
+      await safeSet(STORE_PLANTS, plants);
+      // Záznamy v denníku odkazujúce na zaniknuté rastliny by sa stali neplatnými;
+      // nechávame iba tie pre „všetky rastliny" alebo pre stále existujúce ID.
+      const validIds = new Set(plants.map(p => p.id));
+      waterLog = waterLog.filter(e =>
+        e.plantIds.includes('__all__') ||
+        e.plantIds.some(id => validIds.has(id))
+      );
+      await safeSet(STORE_LOG, waterLog);
+    }
+  }
+}
+
+async function safeSet(key, val) {
+  try {
+    await window.storage.set(key, JSON.stringify(val));
+    return true;
+  } catch (e) {
+    console.error('Storage set failed', key, e);
+    showToast('Chyba pri ukladaní');
+    return false;
+  }
+}
+
+// =========================================================================
+// WEATHER
+// =========================================================================
+async function fetchWeather() {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${settings.lat}&longitude=${settings.lon}&daily=precipitation_sum&past_days=31&forecast_days=4&timezone=${encodeURIComponent(settings.tz)}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Weather API: ' + res.status);
+    const data = await res.json();
+    const dates = data.daily.time;
+    const precip = data.daily.precipitation_sum.map(v => v == null ? 0 : v);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayIdx = dates.indexOf(todayStr);
+    const tIdx = todayIdx >= 0 ? todayIdx : 31;
+
+    weather = {
+      dates,
+      precip,
+      todayIdx: tIdx,
+      past7:  precip.slice(Math.max(0, tIdx - 6), tIdx + 1),
+      past30: precip.slice(Math.max(0, tIdx - 29), tIdx + 1),
+      next3:  precip.slice(tIdx + 1, tIdx + 4),
+    };
+    return true;
+  } catch (e) {
+    console.error('Weather fetch failed', e);
+    weather = null;
+    return false;
+  }
+}
+
+// =========================================================================
+// LOGIC: WATERING RECOMMENDATIONS
+// =========================================================================
+function plantWateringLast7(plantId) {
+  const cutoff = new Date();
+  cutoff.setHours(0,0,0,0);
+  cutoff.setDate(cutoff.getDate() - 6);
+  let total = 0;
+  for (const entry of waterLog) {
+    const d = new Date(entry.date);
+    if (d >= cutoff && (entry.plantIds.includes(plantId) || entry.plantIds.includes('__all__'))) {
+      total += Number(entry.amountMm) || 0;
+    }
+  }
+  return total;
+}
+
+function rainSumPast7() {
+  if (!weather) return 0;
+  return weather.past7.reduce((a,b) => a + b, 0);
+}
+
+function rainNext48() {
+  if (!weather) return 0;
+  return weather.next3.slice(0, 2).reduce((a,b) => a + b, 0);
+}
+
+function computeRecommendation(plant) {
+  const rain = rainSumPast7();
+  const watered = plantWateringLast7(plant.id);
+  const received = rain + watered;
+  const target = plant.weeklyMm;
+  const deficit = target - received;
+  const incoming = rainNext48();
+
+  // Levanduľa-style drought-tolerant plants — more lenient
+  const droughtTolerant = plant.weeklyMm <= 12;
+
+  let level, verdict, advice, amount;
+
+  if (incoming >= 8 && deficit < target * 0.5) {
+    level = 'skip';
+    verdict = 'Počkať';
+    advice = `O 1-2 dni má pršať (≈ ${Math.round(incoming)} mm). Polievanie odlož.`;
+    amount = 0;
+  } else if (deficit <= 0) {
+    level = 'ok';
+    verdict = 'V poriadku';
+    advice = `Za posledných 7 dní rastlina dostala ${Math.round(received)} mm – dosť.`;
+    amount = 0;
+  } else if (deficit < target * 0.25) {
+    level = 'ok';
+    verdict = 'V poriadku';
+    advice = droughtTolerant
+      ? `Levanduľa znesie aj viac sucha. Netreba.`
+      : `Mierny deficit (${Math.round(deficit)} mm), ešte pár dní pokoj.`;
+    amount = 0;
+  } else if (deficit < target * 0.55) {
+    level = 'mild';
+    verdict = 'Mierne poliať';
+    amount = Math.round(deficit * 0.6);
+    advice = `Polej ${amount} mm (≈ ${amount} l/m²). Najlepšie ráno.`;
+  } else {
+    level = 'urgent';
+    verdict = droughtTolerant ? 'Poliať' : 'Dôkladne poliať';
+    amount = Math.min(20, Math.round(deficit * 0.8));
+    advice = `Pôda je suchá. Polej dôkladne ${amount} mm (≈ ${amount} l/m²) ku koreňom.`;
+  }
+
+  return {
+    plant, level, verdict, advice, amount,
+    received: Math.round(received),
+    target, deficit: Math.max(0, Math.round(deficit)),
+    rain: Math.round(rain),
+    watered: Math.round(watered),
+    incoming: Math.round(incoming)
+  };
+}
+
+// =========================================================================
+// RENDER
+// =========================================================================
+function fmtDate(d) {
+  const days = ['nedeľa','pondelok','utorok','streda','štvrtok','piatok','sobota'];
+  const months = ['január','február','marec','apríl','máj','jún','júl','august','september','október','november','december'];
+  return `${days[d.getDay()]}, ${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function shortDay(dateStr) {
+  const d = new Date(dateStr);
+  const days = ['ne','po','ut','st','št','pi','so'];
+  return days[d.getDay()];
+}
+
+function renderHeader() {
+  document.getElementById('today-date').textContent = fmtDate(new Date());
+  document.getElementById('today-loc').textContent = `${settings.city}, ${settings.region}`;
+}
+
+function renderWeather() {
+  const el = document.getElementById('weather-summary');
+  if (!weather) {
+    el.innerHTML = `<div style="grid-column:1/-1; color: var(--rust); font-family: 'Fraunces', serif; font-style: italic; text-align: center;">Nepodarilo sa načítať počasie. Skontroluj nastavenia alebo pripojenie.</div>`;
+    return;
+  }
+  const past7sum = weather.past7.reduce((a,b) => a + b, 0);
+  const past30sum = weather.past30.reduce((a,b) => a + b, 0);
+  const incoming = rainNext48();
+  const todayRain = weather.precip[weather.todayIdx] || 0;
+
+  // build bars (past 7 + today + 3 future)
+  const startIdx = Math.max(0, weather.todayIdx - 6);
+  const endIdx = Math.min(weather.precip.length - 1, weather.todayIdx + 3);
+  const maxMm = Math.max(8, ...weather.precip.slice(startIdx, endIdx + 1));
+  let barsHtml = '<div class="rainbars">';
+  for (let i = startIdx; i <= endIdx; i++) {
+    const mm = weather.precip[i];
+    const hght = Math.max(4, (mm / maxMm) * 56);
+    const isFuture = i > weather.todayIdx;
+    const isToday = i === weather.todayIdx;
+    const cls = `bar${mm > 0.3 ? ' has-rain' : ''}${isFuture ? ' future' : ''}`;
+    const label = isToday ? '<b>dnes</b>' : shortDay(weather.dates[i]);
+    barsHtml += `<div class="${cls}" style="height:${hght}px" title="${weather.dates[i]}: ${mm.toFixed(1)} mm">
+      ${mm > 0.3 ? `<span class="mm">${mm.toFixed(mm >= 10 ? 0 : 1)}</span>` : ''}
+      <span>${label}</span>
+    </div>`;
+  }
+  barsHtml += '</div>';
+
+  // 30-day classification (rough normal for May in lowland Slovakia ~50-65 mm)
+  const expected30 = 55; // mm – orientačný mesačný priemer
+  const pct = Math.round((past30sum / expected30) * 100);
+  let label30 = '';
+  if (pct < 50) label30 = 'výrazne pod normálom';
+  else if (pct < 80) label30 = 'pod normálom';
+  else if (pct < 120) label30 = 'normálne';
+  else label30 = 'nad normálom';
+
+  el.innerHTML = `
+    <div class="weather-block">
+      <div class="label">Posledných 7 dní</div>
+      <div class="value">${past7sum.toFixed(1)}<span class="unit"> mm</span></div>
+      <div class="note">${past7sum < 10 ? 'málo zrážok' : past7sum < 25 ? 'mierne zrážky' : 'výdatné zrážky'}${todayRain > 0.5 ? ` · dnes ${todayRain.toFixed(1)} mm` : ''}</div>
+      ${barsHtml}
+    </div>
+    <div class="weather-block">
+      <div class="label">Posledných 30 dní</div>
+      <div class="value">${past30sum.toFixed(1)}<span class="unit"> mm</span></div>
+      <div class="note">${label30} (≈ ${pct}% mesačného priemeru)</div>
+
+      <div class="label" style="margin-top: 18px;">Prognóza 48 h</div>
+      <div class="value" style="font-size: 24px;">${incoming.toFixed(1)}<span class="unit" style="font-size:14px;"> mm</span></div>
+      <div class="note">${incoming < 1 ? 'sucho — bez dažďa' : incoming < 5 ? 'možno mrholenie' : incoming < 15 ? 'očakávaný dážď' : 'výdatný dážď'}</div>
+
+      <div style="margin-top: 14px; font-size: 11px; color: var(--ink-faint); line-height: 1.5;">
+        ${settings.city} · ${settings.lat.toFixed(2)}°N, ${settings.lon.toFixed(2)}°E
+      </div>
+    </div>
+  `;
+}
+
+function renderRecs() {
+  const el = document.getElementById('recs');
+  if (plants.length === 0) {
+    el.innerHTML = `<div class="empty" style="grid-column:1/-1;">Zatiaľ žiadne rastliny. Pridaj prvú v záložke „Rastliny".</div>`;
+    return;
+  }
+
+  const recs = plants.map(computeRecommendation);
+  // sort: urgent first, then mild, then ok, then skip
+  const order = { urgent: 0, mild: 1, ok: 2, skip: 3 };
+  recs.sort((a, b) => order[a.level] - order[b.level]);
+
+  el.innerHTML = recs.map(r => `
+    <div class="rec-card ${r.level}">
+      <div class="head">
+        <div class="plant"><span class="icon">${r.plant.icon}</span>${r.plant.name}</div>
+        <div class="verdict">${r.verdict}</div>
+      </div>
+      <div class="advice">${r.advice}</div>
+      <div class="detail">
+        <span>dážď: <b>${r.rain} mm</b></span>
+        <span>poliate: <b>${r.watered} mm</b></span>
+        <span>cieľ: <b>${r.target} mm/týž</b></span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPlants() {
+  const el = document.getElementById('plant-grid');
+  if (plants.length === 0) {
+    el.innerHTML = `<div class="empty" style="grid-column:1/-1;">Zatiaľ žiadne rastliny.</div>`;
+    return;
+  }
+  el.innerHTML = plants.map(p => `
+    <div class="plant-card">
+      <div class="name"><span>${p.icon}</span>${p.name}</div>
+      <div class="meta">
+        <strong>${p.weeklyMm} mm/týždeň</strong> · ${p.sun}
+        ${p.notes ? `<br><em style="font-family:'Fraunces',serif;">${p.notes}</em>` : ''}
+      </div>
+      <div class="actions">
+        <button class="tiny" onclick="editPlant('${p.id}')">Upraviť</button>
+        <button class="tiny danger" onclick="deletePlant('${p.id}')">Zmazať</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderLog() {
+  const el = document.getElementById('log-container');
+  if (waterLog.length === 0) {
+    el.innerHTML = `<div class="empty">Zatiaľ žiadne záznamy. Pridaj prvé poliatie.</div>`;
+    return;
+  }
+  const sorted = [...waterLog].sort((a,b) => new Date(b.date) - new Date(a.date));
+  el.innerHTML = `<div class="log-list">${sorted.map(e => {
+    const d = new Date(e.date);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dayDiff = Math.floor((today - d) / (1000*60*60*24));
+    let rel = '';
+    if (dayDiff === 0) rel = 'dnes';
+    else if (dayDiff === 1) rel = 'včera';
+    else if (dayDiff < 7) rel = `pred ${dayDiff} dňami`;
+    else rel = `pred ${Math.floor(dayDiff/7)} týždňami`;
+
+    const plantNames = e.plantIds.includes('__all__')
+      ? '<b>všetky rastliny</b>'
+      : e.plantIds.map(id => {
+          const p = plants.find(pl => pl.id === id);
+          return p ? p.name : '?';
+        }).join(', ');
+
+    return `
+      <div class="log-entry">
+        <div class="when">${d.getDate()}. ${d.getMonth()+1}. ${d.getFullYear()}<span class="rel">${rel}</span></div>
+        <div class="what">${plantNames}${e.notes ? ` <em style="color:var(--ink-faint);font-family:'Fraunces',serif">— ${e.notes}</em>` : ''}</div>
+        <div class="amount">${e.amountMm} mm</div>
+        <button class="del" onclick="deleteWater('${e.id}')" title="Zmazať">×</button>
+      </div>
+    `;
+  }).join('')}</div>`;
+}
+
+function renderSettings() {
+  document.getElementById('current-loc-info').textContent = `${settings.city}, ${settings.region} (${settings.lat.toFixed(3)}°, ${settings.lon.toFixed(3)}°)`;
+}
+
+function renderAll() {
+  renderHeader();
+  renderWeather();
+  renderRecs();
+  renderPlants();
+  renderLog();
+  renderSettings();
+}
+
+// =========================================================================
+// TABS
+// =========================================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.panel;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + target));
+  });
+});
+
+// =========================================================================
+// PLANT MODAL
+// =========================================================================
+function openPlantModal(id) {
+  const modal = document.getElementById('plant-modal');
+  modal.classList.add('open');
+  document.getElementById('plant-modal-title').textContent = id ? 'Upraviť rastlinu' : 'Pridať rastlinu';
+  if (id) {
+    const p = plants.find(pl => pl.id === id);
+    document.getElementById('plant-id').value = p.id;
+    document.getElementById('plant-name').value = p.name;
+    document.getElementById('plant-icon').value = p.icon;
+    document.getElementById('plant-water').value = p.weeklyMm;
+    document.getElementById('plant-sun').value = p.sun;
+    document.getElementById('plant-notes').value = p.notes || '';
+  } else {
+    document.getElementById('plant-id').value = '';
+    document.getElementById('plant-name').value = '';
+    document.getElementById('plant-icon').value = '🌱';
+    document.getElementById('plant-water').value = 25;
+    document.getElementById('plant-sun').value = 'Plné slnko';
+    document.getElementById('plant-notes').value = '';
+  }
+}
+function closePlantModal() { document.getElementById('plant-modal').classList.remove('open'); }
+function editPlant(id) { openPlantModal(id); }
+
+async function savePlant() {
+  const id = document.getElementById('plant-id').value;
+  const name = document.getElementById('plant-name').value.trim();
+  if (!name) { showToast('Zadaj názov'); return; }
+  const icon = document.getElementById('plant-icon').value.trim() || '🌱';
+  const weeklyMm = parseInt(document.getElementById('plant-water').value) || 25;
+  const sun = document.getElementById('plant-sun').value;
+  const notes = document.getElementById('plant-notes').value.trim();
+
+  if (id) {
+    const idx = plants.findIndex(p => p.id === id);
+    plants[idx] = { ...plants[idx], name, icon, weeklyMm, sun, notes };
+  } else {
+    plants.push({ id: 'p_' + Date.now(), name, icon, weeklyMm, sun, notes });
+  }
+  await safeSet(STORE_PLANTS, plants);
+  closePlantModal();
+  renderAll();
+  showToast('Uložené');
+}
+
+async function deletePlant(id) {
+  const p = plants.find(pl => pl.id === id);
+  if (!confirm(`Naozaj zmazať „${p.name}"?`)) return;
+  plants = plants.filter(pl => pl.id !== id);
+  await safeSet(STORE_PLANTS, plants);
+  renderAll();
+  showToast('Zmazané');
+}
+
+// =========================================================================
+// WATER MODAL
+// =========================================================================
+function openWaterModal() {
+  const modal = document.getElementById('water-modal');
+  modal.classList.add('open');
+  document.getElementById('water-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('water-amount').value = 10;
+  document.getElementById('water-notes').value = '';
+  const sel = document.getElementById('water-plants');
+  sel.innerHTML = '<option value="__all__">— Všetky rastliny —</option>' +
+    plants.map(p => `<option value="${p.id}">${p.icon} ${p.name}</option>`).join('');
+}
+function closeWaterModal() { document.getElementById('water-modal').classList.remove('open'); }
+
+async function saveWater() {
+  const date = document.getElementById('water-date').value;
+  const amountMm = parseInt(document.getElementById('water-amount').value) || 0;
+  const notes = document.getElementById('water-notes').value.trim();
+  const sel = document.getElementById('water-plants');
+  const plantIds = Array.from(sel.selectedOptions).map(o => o.value);
+
+  if (!date) { showToast('Zadaj dátum'); return; }
+  if (plantIds.length === 0) { showToast('Vyber aspoň jednu rastlinu'); return; }
+  if (amountMm <= 0) { showToast('Zadaj množstvo'); return; }
+
+  waterLog.push({
+    id: 'w_' + Date.now(),
+    date,
+    plantIds,
+    amountMm,
+    notes,
+    createdAt: new Date().toISOString()
+  });
+  await safeSet(STORE_LOG, waterLog);
+  closeWaterModal();
+  renderAll();
+  showToast('Poliatie zaznamenané');
+}
+
+async function deleteWater(id) {
+  waterLog = waterLog.filter(e => e.id !== id);
+  await safeSet(STORE_LOG, waterLog);
+  renderLog();
+  renderRecs();
+  showToast('Zmazané');
+}
+
+// =========================================================================
+// CITY SEARCH
+// =========================================================================
+async function searchCity() {
+  const q = document.getElementById('city-search').value.trim();
+  if (!q) return;
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=sk&format=json`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const results = data.results || [];
+    const el = document.getElementById('city-results');
+    if (results.length === 0) {
+      el.innerHTML = '<div class="city-opt" style="cursor:default; color: var(--ink-faint);">Nič sa nenašlo</div>';
+      el.classList.add('show');
+      return;
+    }
+    el.innerHTML = results.map(r => `
+      <div class="city-opt" onclick='selectCity(${JSON.stringify(r).replace(/'/g, "&#39;")})'>
+        <strong>${r.name}</strong>
+        <small>${[r.admin1, r.country].filter(Boolean).join(', ')} · ${r.latitude.toFixed(2)}°, ${r.longitude.toFixed(2)}°</small>
+      </div>
+    `).join('');
+    el.classList.add('show');
+  } catch (e) {
+    showToast('Chyba vyhľadávania');
+  }
+}
+
+async function selectCity(r) {
+  settings.city = r.name;
+  settings.region = [r.admin1, r.country].filter(Boolean).join(', ');
+  settings.lat = r.latitude;
+  settings.lon = r.longitude;
+  settings.tz = r.timezone || 'Europe/Bratislava';
+  await safeSet(STORE_SETTINGS, settings);
+  document.getElementById('city-results').classList.remove('show');
+  document.getElementById('city-search').value = '';
+  await fetchWeather();
+  renderAll();
+  showToast('Mesto zmenené');
+}
+
+// =========================================================================
+// EXPORT / IMPORT
+// =========================================================================
+function exportData() {
+  const data = { settings, plants, waterLog, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `zahrada-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Exportované');
+}
+
+async function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const txt = await file.text();
+    const data = JSON.parse(txt);
+    if (data.settings) { settings = data.settings; await safeSet(STORE_SETTINGS, settings); }
+    if (data.plants) { plants = data.plants; await safeSet(STORE_PLANTS, plants); }
+    if (data.waterLog) { waterLog = data.waterLog; await safeSet(STORE_LOG, waterLog); }
+    await fetchWeather();
+    renderAll();
+    showToast('Importované');
+  } catch (err) {
+    showToast('Chyba importu');
+  }
+}
+
+// =========================================================================
+// TOAST
+// =========================================================================
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// close modal on background click
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+
+// =========================================================================
+// INIT
+// =========================================================================
+(async function init() {
+  await loadAll();
+  renderHeader();
+  await fetchWeather();
+  renderAll();
+})();
+</script>
