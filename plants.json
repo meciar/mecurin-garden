@@ -1,0 +1,18 @@
+[
+  { "id": "p_paprika",   "name": "Paprika",    "icon": "🫑", "weeklyMm": 28, "sun": "Plné slnko",                        "notes": "Citlivá na nepravidelné polievanie – môžu praskať plody." },
+  { "id": "p_rajciny",   "name": "Rajčiny",    "icon": "🍅", "weeklyMm": 35, "sun": "Plné slnko",                        "notes": "Polievaj ku koreňom, nie na listy. Mulčuj na udržanie vlhkosti." },
+  { "id": "p_uhorky",    "name": "Uhorky",     "icon": "🥒", "weeklyMm": 40, "sun": "Plné slnko",                        "notes": "Veľmi smädné, plytké korene. Polievaj často a dôkladne." },
+  { "id": "p_melony",    "name": "Melóny",     "icon": "🍈", "weeklyMm": 35, "sun": "Plné slnko",                        "notes": "Pred dozrievaním polievanie obmedz – plody budú sladšie." },
+  { "id": "p_cuketa",    "name": "Cuketa",     "icon": "🥬", "weeklyMm": 38, "sun": "Plné slnko",                        "notes": "Veľké listy odparujú veľa vody. Polievaj ku koreňom, nie na listy." },
+  { "id": "p_patizon",   "name": "Patizón",    "icon": "🎃", "weeklyMm": 35, "sun": "Plné slnko",                        "notes": "Podobné nároky ako cuketa. Dôkladné polievanie 2-3× týždenne." },
+  { "id": "p_hrach",     "name": "Hrach",      "icon": "🫛", "weeklyMm": 25, "sun": "Plné slnko",                        "notes": "Chladnomilný – v horúčavách polievaj ráno, mulčuj proti vysychaniu." },
+  { "id": "p_mrkva",     "name": "Mrkva",      "icon": "🥕", "weeklyMm": 25, "sun": "Plné slnko",                        "notes": "Rovnomerné polievanie – nepravidelné spôsobuje praskanie a deformáciu koreňov." },
+  { "id": "p_petrzlen",  "name": "Petržlen",   "icon": "🌿", "weeklyMm": 22, "sun": "Plné slnko",                        "notes": "Rovnomerná vlhkosť pre nadýchanú vňať a pekné korene." },
+  { "id": "p_jahody",    "name": "Jahody",     "icon": "🍓", "weeklyMm": 25, "sun": "Plné slnko",                        "notes": "Polievaj ráno, vyhýbaj sa zmáčaniu listov a plodov." },
+  { "id": "p_bazalka",   "name": "Bazalka",    "icon": "🌱", "weeklyMm": 25, "sun": "Plné slnko",                        "notes": "Miluje teplo. Polievaj ráno, nie večer – znižuje riziko hubových chorôb." },
+  { "id": "p_mata",      "name": "Mäta",       "icon": "🍃", "weeklyMm": 30, "sun": "Polotieň",                          "notes": "Smädná a invázna – pestuj radšej v nádobe alebo s koreňovou bariérou." },
+  { "id": "p_koriander", "name": "Koriander",  "icon": "🌾", "weeklyMm": 22, "sun": "Ranné slnko / poludňajší tieň",    "notes": "V horúčavách rýchlo nakvitne. Sej postupne každé 2-3 týždne." },
+  { "id": "p_oregano",   "name": "Oregano",    "icon": "🪴", "weeklyMm": 12, "sun": "Plné slnko",                        "notes": "Stredomorská bylina, znesie sucho. Nepolievaj často." },
+  { "id": "p_tymian",    "name": "Tymián",     "icon": "🌿", "weeklyMm": 10, "sun": "Plné slnko",                        "notes": "Drobnolistý milovník sucha. Preliatie znáša horšie ako suchú periódu." },
+  { "id": "p_rozmarin",  "name": "Rozmarín",   "icon": "🌲", "weeklyMm": 10, "sun": "Plné slnko",                        "notes": "Veľmi odolný voči suchu. Citlivý na mokré korene v zime." }
+]
