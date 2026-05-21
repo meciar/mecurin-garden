@@ -11,6 +11,11 @@
   },
   "routes": [
     {
+      "route": "/api/photos",
+      "methods": ["GET"],
+      "allowedRoles": ["anonymous"]
+    },
+    {
       "route": "/api/*",
       "allowedRoles": ["authenticated"]
     }

@@ -607,6 +607,96 @@ display: flex;
     border-radius: 12px;
   }
 
+  /* ---------- GALLERY ---------- */
+  .year-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-soft);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .year-nav::-webkit-scrollbar { display: none; }
+  .year-nav button {
+    background: none;
+    border: none;
+    padding: 9px 16px;
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color .2s;
+  }
+  .year-nav button:hover { color: var(--ink); }
+  .year-nav button.active { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .photo-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 10px;
+    cursor: zoom-in;
+    position: relative;
+    background: var(--bg-2);
+  }
+  .photo-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .3s;
+    display: block;
+  }
+  .photo-item:hover img { transform: scale(1.04); }
+  .photo-item .photo-del {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: rgba(42,36,25,0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .photo-item:hover .photo-del { opacity: 1; }
+
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    cursor: zoom-out;
+    padding: 20px;
+  }
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    color: rgba(255,255,255,0.7);
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    background: none; border: none;
+  }
+
   /* ---------- AUTH POPUP ---------- */
   .auth-popup {
     position: absolute;
@@ -692,6 +782,7 @@ display: flex;
     <button class="tab-btn active" data-panel="dashboard">Dnes</button>
     <button class="tab-btn" data-panel="plants">Rastliny</button>
     <button class="tab-btn" data-panel="log">Denník polievania</button>
+    <button class="tab-btn" data-panel="gallery">Fotogaléria</button>
     <button class="tab-btn" data-panel="settings">Nastavenia</button>
   </nav>
 
@@ -725,6 +816,16 @@ display: flex;
       <button class="btn rust" onclick="openWaterModal()">+ Zaznamenať poliatie</button>
     </div>
     <div id="log-container"></div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="panel" id="panel-gallery">
+    <div class="year-nav" id="year-nav"></div>
+    <div id="gallery-upload-bar" style="display:none; margin-bottom:20px;">
+      <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="uploadPhotos(event)">
+      <button class="btn" onclick="document.getElementById('photo-input').click()">+ Nahrať fotky</button>
+    </div>
+    <div id="gallery-content"><div class="loading-pulse">Načítavam…</div></div>
   </section>
 
   <!-- SETTINGS -->
@@ -783,6 +884,11 @@ display: flex;
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <img src="" id="lightbox-img" onclick="event.stopPropagation()">
+</div>
 
 <script>
 // =========================================================================
@@ -1213,6 +1319,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const target = btn.dataset.panel;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
     document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + target));
+    if (target === 'gallery') initGallery();
   });
 });
 
@@ -1404,6 +1511,99 @@ document.addEventListener('click', e => {
 document.querySelectorAll('.modal-bg').forEach(bg => {
   bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
 });
+
+// =========================================================================
+// GALLERY
+// =========================================================================
+let galleryYear = new Date().getFullYear();
+let galleryLoaded = false;
+
+function initGallery() {
+  if (galleryLoaded) return;
+  galleryLoaded = true;
+  const isAdmin = currentUser && currentUser.userDetails === 'meciar';
+  if (isAdmin) document.getElementById('gallery-upload-bar').style.display = 'block';
+  renderYearNav();
+  loadPhotos();
+}
+
+function renderYearNav() {
+  const thisYear = new Date().getFullYear();
+  const years = [];
+  for (let y = thisYear; y >= 2021; y--) years.push(y);
+  document.getElementById('year-nav').innerHTML = years.map(y => `
+    <button class="${y === galleryYear ? 'active' : ''}" onclick="selectGalleryYear(${y})">${y}</button>
+  `).join('');
+}
+
+function selectGalleryYear(year) {
+  galleryYear = year;
+  renderYearNav();
+  loadPhotos();
+}
+
+async function loadPhotos() {
+  const el = document.getElementById('gallery-content');
+  el.innerHTML = '<div class="loading-pulse">Načítavam fotky…</div>';
+  try {
+    const res = await fetch(`/api/photos?year=${galleryYear}`);
+    const photos = await res.json();
+    const isAdmin = currentUser && currentUser.userDetails === 'meciar';
+    if (photos.length === 0) {
+      el.innerHTML = '<div class="empty">Žiadne fotky pre tento rok.</div>';
+      return;
+    }
+    el.innerHTML = `<div class="photo-grid">${photos.map(p => `
+      <div class="photo-item" onclick="openLightbox('${p.url}')">
+        <img src="${p.url}" loading="lazy" alt="">
+        ${isAdmin ? `<button class="photo-del" onclick="event.stopPropagation();deletePhoto('${p.name}')" title="Zmazať">×</button>` : ''}
+      </div>
+    `).join('')}</div>`;
+  } catch {
+    el.innerHTML = '<div class="empty">Nepodarilo sa načítať fotky.</div>';
+  }
+}
+
+async function uploadPhotos(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  showToast(`Nahrávam ${files.length} fotk${files.length === 1 ? 'u' : 'y'}…`);
+  let ok = 0;
+  for (const file of files) {
+    try {
+      const sasRes = await fetch('/api/photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year: galleryYear, filename: file.name, contentType: file.type })
+      });
+      const { sasUrl } = await sasRes.json();
+      await fetch(sasUrl, {
+        method: 'PUT',
+        headers: { 'x-ms-blob-type': 'BlockBlob', 'Content-Type': file.type },
+        body: file
+      });
+      ok++;
+    } catch { showToast('Chyba: ' + file.name); }
+  }
+  e.target.value = '';
+  if (ok) { await loadPhotos(); showToast(`Nahrané: ${ok} fotk${ok === 1 ? 'a' : 'y'}`); }
+}
+
+async function deletePhoto(blobName) {
+  if (!confirm('Zmazať fotku?')) return;
+  const res = await fetch(`/api/photos?blob=${encodeURIComponent(blobName)}`, { method: 'DELETE' });
+  if (res.ok) { loadPhotos(); showToast('Zmazané'); }
+}
+
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.getElementById('lightbox-img').src = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
 // =========================================================================
 // INIT

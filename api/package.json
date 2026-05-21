@@ -2,6 +2,7 @@
   "name": "mecurin-garden-api",
   "version": "1.0.0",
   "dependencies": {
-    "@azure/data-tables": "^13.2.2"
+    "@azure/data-tables": "^13.2.2",
+    "@azure/storage-blob": "^12.24.0"
   }
 }
