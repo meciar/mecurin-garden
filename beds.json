@@ -41,6 +41,11 @@
     "type": "open",
     "plants": ["p_rajciny"],
     "row": 2,
-    "col": 2
+    "col": 2,
+    "layout": [
+      ["Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1"],
+      ["Sonet", "Sonet", "Sonet", "Primavera", "Primavera", "Primavera", "Tornado", "Tornado", "Tornado"],
+      ["Bejbina", "Bejbina", "Bejbina", "Bejbina", "Bejbina", "Bejbina", "Matina", "Matina", "Matina"]
+    ]
   }
 ]
