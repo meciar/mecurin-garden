@@ -30,7 +30,10 @@
     "type": "open",
     "plants": ["p_rajciny"],
     "row": 2,
-    "col": 1
+    "col": 1,
+    "layout": [
+      ["Cherry", "Cherry", "Cherry", "Striped Roman", "Spencer", "Spencer", "Spencer", "Tigrella", "Tigrella", "Marzano", "Marzano", "Melónová", "Cerice žltá", "Cerice žltá", "Cerice žltá"]
+    ]
   },
   {
     "id": "b_rajciny_2",
