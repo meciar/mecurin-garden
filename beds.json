@@ -18,7 +18,11 @@
     "type": "open",
     "plants": ["p_paprika"],
     "row": 1,
-    "col": 1
+    "col": 1,
+    "layout": [
+      ["Chilli", "Chilli", "Chilli", "Chilli", "Kapia", "Kapia", "Sladká", "Viharez", "Viharez", "Viharez", "Viharez", "Viharez", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam"],
+      ["Chilli", "Chilli", "Chilli", "Chilli", "Kapia", "Kapia", "Sladká", "Viharez", "Viharez", "Viharez", "Viharez", "Viharez", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam"]
+    ]
   },
   {
     "id": "b_rajciny_1",
