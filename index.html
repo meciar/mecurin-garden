@@ -607,59 +607,42 @@ display: flex;
     border-radius: 12px;
   }
 
-  /* ---------- LOGIN ---------- */
-  .login-screen {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 300;
-    padding: 20px;
-  }
-  .login-box {
+  /* ---------- AUTH POPUP ---------- */
+  .auth-popup {
+    position: absolute;
+    right: 0; top: calc(100% + 8px);
     background: var(--paper);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px 36px;
-    max-width: 380px;
-    width: 100%;
-    box-shadow: var(--shadow-lg);
-    text-align: center;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 14px;
+    min-width: 220px;
+    z-index: 200;
+    display: none;
   }
-  .login-box .login-logo {
-    font-family: 'Lora', serif;
-    font-size: 32px;
-    color: var(--green);
-    margin-bottom: 8px;
-  }
-  .login-box .login-sub {
-    font-family: 'Lora', serif;
-    font-style: italic;
-    font-size: 14px;
-    color: var(--ink-soft);
-    margin-bottom: 28px;
-  }
-  .login-box .login-btn {
+  .auth-popup.open { display: block; }
+  .auth-popup a {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 11px 18px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--paper-2);
-    color: var(--ink);
-    font-family: 'Manrope', sans-serif;
-    font-size: 14px;
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 600;
-    cursor: pointer;
+    color: var(--ink);
     text-decoration: none;
-    margin-bottom: 10px;
-    transition: all .15s;
+    transition: background .15s;
   }
-  .login-box .login-btn:hover { background: var(--bg-2); border-color: var(--border); }
+  .auth-popup a:hover { background: var(--bg-2); }
+  .auth-popup .popup-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .auth-trigger { position: relative; }
 
   /* ---------- TOAST ---------- */
   .toast {
@@ -683,16 +666,6 @@ display: flex;
   }
 </style>
 
-<div class="login-screen" id="login-screen" style="display:none">
-  <div class="login-box">
-    <div class="login-logo">❦ Mečurin</div>
-    <div class="login-sub">denník polievania &amp; zrážok</div>
-    <a href="/.auth/login/github?post_login_redirect_uri=/" class="login-btn">🐙 Prihlásiť cez GitHub</a>
-    <a href="/.auth/login/aad?post_login_redirect_uri=/" class="login-btn">🪟 Prihlásiť cez Microsoft</a>
-    <a href="/.auth/login/google?post_login_redirect_uri=/" class="login-btn">🔵 Prihlásiť cez Google</a>
-  </div>
-</div>
-
 <div class="app">
 
   <header class="masthead">
@@ -708,10 +681,9 @@ display: flex;
     <div class="masthead-meta">
       <div class="date" id="today-date">—</div>
       <div class="loc" id="today-loc">—</div>
-      <div style="margin-top: 8px; font-size: 12px; color: var(--ink-faint);">
-        <span id="user-name"></span>
-        &nbsp;·&nbsp;
-        <a href="/.auth/logout?post_logout_redirect_uri=/" style="color: var(--ink-faint); text-decoration: underline; cursor: pointer;">Odhlásiť</a>
+      <div style="margin-top: 8px; font-size: 12px; color: var(--ink-faint);" class="auth-trigger">
+        <span id="auth-label" style="cursor:pointer; text-decoration: underline;" onclick="toggleAuthPopup()"></span>
+        <div class="auth-popup" id="auth-popup"></div>
       </div>
     </div>
   </header>
@@ -917,12 +889,21 @@ async function checkAuth() {
 }
 
 async function loadWaterLog() {
-  try {
-    const res = await fetch('/api/waterlog');
-    if (!res.ok) throw new Error(res.status);
-    waterLog = await res.json();
-  } catch {
-    waterLog = [];
+  if (currentUser) {
+    try {
+      const res = await fetch('/api/waterlog');
+      if (!res.ok) throw new Error(res.status);
+      waterLog = await res.json();
+    } catch {
+      waterLog = [];
+    }
+  } else {
+    try {
+      const r = await window.storage.get(STORE_LOG);
+      waterLog = r ? JSON.parse(r.value) : [];
+    } catch {
+      waterLog = [];
+    }
   }
 }
 
@@ -1178,7 +1159,8 @@ function renderPlants() {
 function renderLog() {
   const el = document.getElementById('log-container');
   if (waterLog.length === 0) {
-    el.innerHTML = `<div class="empty">Zatiaľ žiadne záznamy. Pridaj prvé poliatie.</div>`;
+    const note = currentUser ? '' : `<div style="font-size:12px; color:var(--ink-faint); margin-top:10px; font-style:italic;">Prihlás sa pre ukladanie dát na server.</div>`;
+    el.innerHTML = `<div class="empty">Zatiaľ žiadne záznamy. Pridaj prvé poliatie.${note}</div>`;
     return;
   }
   const sorted = [...waterLog].sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -1261,12 +1243,17 @@ async function saveWater() {
   if (amountMm <= 0) { showToast('Zadaj množstvo'); return; }
 
   try {
-    const res = await fetch('/api/waterlog', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date, plantIds, amountMm, notes })
-    });
-    if (!res.ok) throw new Error(res.status);
+    if (currentUser) {
+      const res = await fetch('/api/waterlog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, plantIds, amountMm, notes })
+      });
+      if (!res.ok) throw new Error(res.status);
+    } else {
+      waterLog.push({ id: 'w_' + Date.now(), date, plantIds, amountMm, notes, createdAt: new Date().toISOString() });
+      await safeSet(STORE_LOG, waterLog);
+    }
     await loadWaterLog();
     closeWaterModal();
     renderAll();
@@ -1278,8 +1265,13 @@ async function saveWater() {
 
 async function deleteWater(id) {
   try {
-    const res = await fetch(`/api/waterlog?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error(res.status);
+    if (currentUser) {
+      const res = await fetch(`/api/waterlog?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(res.status);
+    } else {
+      waterLog = waterLog.filter(e => e.id !== id);
+      await safeSet(STORE_LOG, waterLog);
+    }
     await loadWaterLog();
     renderLog();
     renderRecs();
@@ -1375,6 +1367,39 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
+// =========================================================================
+// AUTH UI
+// =========================================================================
+function toggleAuthPopup() {
+  document.getElementById('auth-popup').classList.toggle('open');
+}
+
+function renderAuthUI() {
+  const label = document.getElementById('auth-label');
+  const popup = document.getElementById('auth-popup');
+  if (currentUser) {
+    label.textContent = currentUser.userDetails || 'Prihlásený';
+    popup.innerHTML = `
+      <div class="popup-title">Prihlásený účet</div>
+      <a href="/.auth/logout?post_logout_redirect_uri=/">🚪 Odhlásiť sa</a>
+    `;
+  } else {
+    label.textContent = 'Prihlásiť sa';
+    popup.innerHTML = `
+      <div class="popup-title">Uložiť dáta na server</div>
+      <a href="/.auth/login/github?post_login_redirect_uri=/">🐙 GitHub</a>
+      <a href="/.auth/login/aad?post_login_redirect_uri=/">🪟 Microsoft</a>
+    `;
+  }
+}
+
+document.addEventListener('click', e => {
+  const trigger = document.querySelector('.auth-trigger');
+  if (trigger && !trigger.contains(e.target)) {
+    document.getElementById('auth-popup')?.classList.remove('open');
+  }
+});
+
 // close modal on background click
 document.querySelectorAll('.modal-bg').forEach(bg => {
   bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
@@ -1384,17 +1409,11 @@ document.querySelectorAll('.modal-bg').forEach(bg => {
 // INIT
 // =========================================================================
 (async function init() {
-  const authenticated = await checkAuth();
-  if (!authenticated) {
-    document.getElementById('login-screen').style.display = 'flex';
-    return;
-  }
-
-  document.getElementById('user-name').textContent = currentUser.userDetails || '';
-
+  await checkAuth();
   await loadAll();
   await fetchPlants();
   await loadWaterLog();
+  renderAuthUI();
   renderHeader();
   await fetchWeather();
   renderAll();
