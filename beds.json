@@ -1,0 +1,34 @@
+[
+  {
+    "id": "b_paprika_folia",
+    "name": "Paprika vo fólii",
+    "type": "foil",
+    "plants": ["p_paprika"],
+    "row": 1,
+    "col": 1
+  },
+  {
+    "id": "b_paprika_vonku",
+    "name": "Paprika vonku",
+    "type": "open",
+    "plants": ["p_paprika"],
+    "row": 1,
+    "col": 2
+  },
+  {
+    "id": "b_rajciny_1",
+    "name": "Rajčiny I",
+    "type": "open",
+    "plants": ["p_rajciny"],
+    "row": 2,
+    "col": 1
+  },
+  {
+    "id": "b_rajciny_2",
+    "name": "Rajčiny II",
+    "type": "open",
+    "plants": ["p_rajciny"],
+    "row": 2,
+    "col": 2
+  }
+]

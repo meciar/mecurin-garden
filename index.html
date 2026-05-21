@@ -607,6 +607,97 @@ display: flex;
     border-radius: 12px;
   }
 
+  /* ---------- MAP ---------- */
+  .garden-wrap {
+    background: #c4aa85;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .garden-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 500px) {
+    .garden-grid { grid-template-columns: 1fr; }
+  }
+  .bed-plot {
+    border-radius: 10px;
+    padding: 16px 18px;
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    transition: transform .15s;
+  }
+  .bed-plot:hover { transform: translateY(-2px); }
+  .bed-plot.open {
+    background: #d6e8c4;
+    border: 2px solid #8aae72;
+  }
+  .bed-plot.foil {
+    background: #deeaf7;
+    border: 2px dashed #7aaed4;
+  }
+  .bed-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bed-label .bed-icon {
+    font-size: 18px;
+  }
+  .bed-label .bed-name {
+    font-family: 'Lora', serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #2a3d22;
+  }
+  .bed-plot.foil .bed-name { color: #1e3a5a; }
+  .bed-type-badge {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+  .bed-plot.open .bed-type-badge { background: #b8d9a0; color: #2f5a1e; }
+  .bed-plot.foil .bed-type-badge { background: #b8d4ef; color: #1a4a7a; }
+  .bed-plants-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .bed-plant-chip {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #2a2419;
+  }
+  .map-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: #5a4a35;
+    flex-wrap: wrap;
+  }
+  .map-legend span { display: flex; align-items: center; gap: 5px; }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
   /* ---------- GALLERY ---------- */
   .year-nav {
     display: flex;
@@ -782,6 +873,7 @@ display: flex;
     <button class="tab-btn active" data-panel="dashboard">Dnes</button>
     <button class="tab-btn" data-panel="plants">Rastliny</button>
     <button class="tab-btn" data-panel="log">Denník polievania</button>
+    <button class="tab-btn" data-panel="map">Mapa</button>
     <button class="tab-btn" data-panel="gallery">Fotogaléria</button>
     <button class="tab-btn" data-panel="settings">Nastavenia</button>
   </nav>
@@ -816,6 +908,11 @@ display: flex;
       <button class="btn rust" onclick="openWaterModal()">+ Zaznamenať poliatie</button>
     </div>
     <div id="log-container"></div>
+  </section>
+
+  <!-- MAP -->
+  <section class="panel" id="panel-map">
+    <div id="map-container"><div class="loading-pulse">Načítavam mapu…</div></div>
   </section>
 
   <!-- GALLERY -->
@@ -1319,6 +1416,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const target = btn.dataset.panel;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
     document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + target));
+    if (target === 'map') initMap();
     if (target === 'gallery') initGallery();
   });
 });
@@ -1511,6 +1609,89 @@ document.addEventListener('click', e => {
 document.querySelectorAll('.modal-bg').forEach(bg => {
   bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
 });
+
+// =========================================================================
+// MAP
+// =========================================================================
+let beds = [];
+let mapLoaded = false;
+
+async function fetchBeds() {
+  try {
+    const res = await fetch('/beds.json');
+    if (!res.ok) throw new Error();
+    beds = await res.json();
+  } catch { beds = []; }
+}
+
+async function initMap() {
+  if (mapLoaded) return;
+  mapLoaded = true;
+  if (!beds.length) await fetchBeds();
+  renderMap();
+}
+
+function renderMap() {
+  const el = document.getElementById('map-container');
+  if (!beds.length) {
+    el.innerHTML = '<div class="empty">Žiadne záhony v beds.json.</div>';
+    return;
+  }
+
+  // Determine grid dimensions
+  const maxRow = Math.max(...beds.map(b => b.row));
+  const maxCol = Math.max(...beds.map(b => b.col));
+
+  // Build grid rows
+  let gridHtml = '';
+  for (let r = 1; r <= maxRow; r++) {
+    const rowBeds = beds.filter(b => b.row === r).sort((a, b) => a.col - b.col);
+    // Fill missing columns with empty slots
+    const slots = [];
+    for (let c = 1; c <= maxCol; c++) {
+      const bed = rowBeds.find(b => b.col === c);
+      slots.push(bed ? renderBed(bed) : '<div></div>');
+    }
+    gridHtml += slots.join('');
+  }
+
+  el.innerHTML = `
+    <div class="garden-wrap">
+      <div class="garden-grid" style="grid-template-columns: repeat(${maxCol}, 1fr);">
+        ${gridHtml}
+      </div>
+      <div class="map-legend">
+        <span><span class="legend-dot" style="background:#8aae72; border:2px solid #8aae72;"></span> Vonkajší záhon</span>
+        <span><span class="legend-dot" style="background:#b8d4ef; border:2px dashed #7aaed4;"></span> Pod fóliou</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderBed(bed) {
+  const bedPlants = (bed.plants || []).map(id => {
+    const p = plants.find(pl => pl.id === id);
+    return p ? `<div class="bed-plant-chip"><span>${p.icon}</span>${p.name}</div>` : '';
+  }).join('');
+
+  const icon = (bed.plants || []).map(id => {
+    const p = plants.find(pl => pl.id === id);
+    return p ? p.icon : '🌱';
+  })[0] || '🌱';
+
+  const badgeLabel = bed.type === 'foil' ? 'fólia' : 'vonku';
+
+  return `
+    <div class="bed-plot ${bed.type || 'open'}">
+      <div class="bed-label">
+        <span class="bed-icon">${icon}</span>
+        <span class="bed-name">${bed.name}</span>
+        <span class="bed-type-badge">${badgeLabel}</span>
+      </div>
+      <div class="bed-plants-list">${bedPlants}</div>
+    </div>
+  `;
+}
 
 // =========================================================================
 // GALLERY
