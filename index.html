@@ -961,6 +961,7 @@ async function fetchWeather() {
       precip,
       todayIdx: tIdx,
       past7:  precip.slice(Math.max(0, tIdx - 6), tIdx + 1),
+      past14: precip.slice(Math.max(0, tIdx - 13), tIdx + 1),
       past30: precip.slice(Math.max(0, tIdx - 29), tIdx + 1),
       next3:  precip.slice(tIdx + 1, tIdx + 4),
     };
@@ -1077,13 +1078,13 @@ function renderWeather() {
     el.innerHTML = `<div style="grid-column:1/-1; color: var(--rust); font-family: 'Lora', serif; font-style: italic; text-align: center;">Nepodarilo sa načítať počasie. Skontroluj nastavenia alebo pripojenie.</div>`;
     return;
   }
-  const past7sum = weather.past7.reduce((a,b) => a + b, 0);
+  const past14sum = weather.past14.reduce((a,b) => a + b, 0);
   const past30sum = weather.past30.reduce((a,b) => a + b, 0);
   const incoming = rainNext48();
   const todayRain = weather.precip[weather.todayIdx] || 0;
 
-  // build bars (past 7 + today + 3 future)
-  const startIdx = Math.max(0, weather.todayIdx - 6);
+  // build bars (past 14 + today + 3 future)
+  const startIdx = Math.max(0, weather.todayIdx - 13);
   const endIdx = Math.min(weather.precip.length - 1, weather.todayIdx + 3);
   const maxMm = Math.max(8, ...weather.precip.slice(startIdx, endIdx + 1));
   let barsHtml = '<div class="rainbars">';
@@ -1112,21 +1113,21 @@ function renderWeather() {
 
   el.innerHTML = `
     <div class="weather-block">
-      <div class="label">Posledných 7 dní</div>
-      <div class="value">${past7sum.toFixed(1)}<span class="unit"> mm</span></div>
-      <div class="note">${past7sum < 10 ? 'málo zrážok' : past7sum < 25 ? 'mierne zrážky' : 'výdatné zrážky'}${todayRain > 0.5 ? ` · dnes ${todayRain.toFixed(1)} mm` : ''}</div>
+      <div class="label">Posledných 14 dní</div>
+      <div class="value">${past14sum.toFixed(1)}<span class="unit"> mm</span></div>
+      <div class="note">${past14sum < 15 ? 'málo zrážok' : past14sum < 40 ? 'mierne zrážky' : 'výdatné zrážky'}${todayRain > 0.5 ? ` · dnes ${todayRain.toFixed(1)} mm` : ''}</div>
       ${barsHtml}
     </div>
     <div class="weather-block">
       <div class="label">Posledných 30 dní</div>
-      <div class="value">${past30sum.toFixed(1)}<span class="unit"> mm</span></div>
-      <div class="note">${label30} (≈ ${pct}% mesačného priemeru)</div>
+      <div class="value" style="font-size: 22px;">${past30sum.toFixed(1)}<span class="unit" style="font-size:14px;"> mm</span></div>
+      <div class="note">${label30} (≈ ${pct}% priemeru)</div>
 
-      <div class="label" style="margin-top: 18px;">Prognóza 48 h</div>
-      <div class="value" style="font-size: 24px;">${incoming.toFixed(1)}<span class="unit" style="font-size:14px;"> mm</span></div>
+      <div class="label" style="margin-top: 14px;">Prognóza 48 h</div>
+      <div class="value" style="font-size: 22px;">${incoming.toFixed(1)}<span class="unit" style="font-size:14px;"> mm</span></div>
       <div class="note">${incoming < 1 ? 'sucho — bez dažďa' : incoming < 5 ? 'možno mrholenie' : incoming < 15 ? 'očakávaný dážď' : 'výdatný dážď'}</div>
 
-      <div style="margin-top: 14px; font-size: 11px; color: var(--ink-faint); line-height: 1.5;">
+      <div style="margin-top: 10px; font-size: 11px; color: var(--ink-faint); line-height: 1.5;">
         ${settings.city} · ${settings.lat.toFixed(2)}°N, ${settings.lon.toFixed(2)}°E
       </div>
     </div>
