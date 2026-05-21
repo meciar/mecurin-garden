@@ -8,7 +8,7 @@
     "col": 2,
     "layout": [
       ["Chilli", "Viharez", "Viharez", "Viharez", "Sladká", "Garam"],
-      ["Chilli", "Jalapeños", "Viharez", "Sladká", "Garam"],
+      ["", "Chilli", "Jalapeños", "Viharez", "Sladká", "Garam"],
       ["Garam", "Garam", "Garam", "Garam", "Garam", "Garam"]
     ]
   },

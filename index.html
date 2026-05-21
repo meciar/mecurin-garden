@@ -1706,13 +1706,13 @@ function renderMap() {
 }
 
 const VARIETY_COLORS = {
-  'chilli':    '#c0392b',
-  'viharez':   '#2e7d32',
-  'sladka':    '#e65100',
-  'sladká':    '#e65100',
-  'garam':     '#6a1b9a',
-  'jalapenos': '#00796b',
-  'jalapeños': '#00796b',
+  'chilli':    '#1a1a1a',
+  'viharez':   '#e65100',
+  'sladka':    '#2e7d32',
+  'sladká':    '#2e7d32',
+  'garam':     '#c62828',
+  'jalapenos': '#6a1b9a',
+  'jalapeños': '#6a1b9a',
 };
 
 function varietyBg(name) {
@@ -1737,7 +1737,10 @@ function renderBed(bed) {
     const colsHtml = bed.layout.map((col, ci) => `
       <div class="layout-col-wrap">
         <div class="layout-col">
-          ${col.map(v => `<div class="layout-cell" style="background:${varietyBg(v)}" title="${v}">${v}</div>`).join('')}
+          ${col.map(v => v
+            ? `<div class="layout-cell" style="background:${varietyBg(v)}" title="${v}">${v}</div>`
+            : `<div class="layout-cell" style="background:transparent;"></div>`
+          ).join('')}
         </div>
         <div class="layout-col-label">${colLabels[ci]}</div>
       </div>
