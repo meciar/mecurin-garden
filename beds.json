@@ -5,7 +5,12 @@
     "type": "foil",
     "plants": ["p_paprika"],
     "row": 1,
-    "col": 2
+    "col": 2,
+    "layout": [
+      ["Chilli", "Viharez", "Viharez", "Viharez", "Sladká", "Garam"],
+      ["Chilli", "Jalapeños", "Viharez", "Sladká", "Garam"],
+      ["Garam", "Garam", "Garam", "Garam", "Garam", "Garam"]
+    ]
   },
   {
     "id": "b_paprika_vonku",

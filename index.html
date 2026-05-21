@@ -683,6 +683,43 @@ display: flex;
     gap: 5px;
     color: #2a2419;
   }
+  .bed-layout {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .layout-col-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .layout-col {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 3px;
+    flex: 1;
+  }
+  .layout-cell {
+    padding: 3px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .layout-col-label {
+    font-size: 10px;
+    text-align: center;
+    color: rgba(0,0,0,0.45);
+    font-weight: 700;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
   .map-legend {
     display: flex;
     gap: 16px;
@@ -1668,18 +1705,51 @@ function renderMap() {
   `;
 }
 
-function renderBed(bed) {
-  const bedPlants = (bed.plants || []).map(id => {
-    const p = plants.find(pl => pl.id === id);
-    return p ? `<div class="bed-plant-chip"><span>${p.icon}</span>${p.name}</div>` : '';
-  }).join('');
+const VARIETY_COLORS = {
+  'chilli':    '#c0392b',
+  'viharez':   '#2e7d32',
+  'sladka':    '#e65100',
+  'sladká':    '#e65100',
+  'garam':     '#6a1b9a',
+  'jalapenos': '#00796b',
+  'jalapeños': '#00796b',
+};
 
+function varietyBg(name) {
+  const key = name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (VARIETY_COLORS[key]) return VARIETY_COLORS[key];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return `hsl(${Math.abs(hash) % 360}, 52%, 38%)`;
+}
+
+function renderBed(bed) {
   const icon = (bed.plants || []).map(id => {
     const p = plants.find(pl => pl.id === id);
     return p ? p.icon : '🌱';
   })[0] || '🌱';
 
   const badgeLabel = bed.type === 'foil' ? 'fólia' : 'vonku';
+
+  let bodyHtml = '';
+  if (bed.layout && bed.layout.length) {
+    const colLabels = bed.layout.length === 3 ? ['Ľ', 'S', 'P'] : bed.layout.map((_, i) => i + 1);
+    const colsHtml = bed.layout.map((col, ci) => `
+      <div class="layout-col-wrap">
+        <div class="layout-col">
+          ${col.map(v => `<div class="layout-cell" style="background:${varietyBg(v)}" title="${v}">${v}</div>`).join('')}
+        </div>
+        <div class="layout-col-label">${colLabels[ci]}</div>
+      </div>
+    `).join('');
+    bodyHtml = `<div class="bed-layout">${colsHtml}</div>`;
+  } else {
+    const chips = (bed.plants || []).map(id => {
+      const p = plants.find(pl => pl.id === id);
+      return p ? `<div class="bed-plant-chip"><span>${p.icon}</span>${p.name}</div>` : '';
+    }).join('');
+    bodyHtml = `<div class="bed-plants-list">${chips}</div>`;
+  }
 
   return `
     <div class="bed-plot ${bed.type || 'open'}">
@@ -1688,7 +1758,7 @@ function renderBed(bed) {
         <span class="bed-name">${bed.name}</span>
         <span class="bed-type-badge">${badgeLabel}</span>
       </div>
-      <div class="bed-plants-list">${bedPlants}</div>
+      ${bodyHtml}
     </div>
   `;
 }
