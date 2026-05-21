@@ -1,24 +1,10 @@
 [
   {
-    "id": "b_paprika_folia",
-    "name": "Paprika vo fólii",
-    "type": "foil",
-    "plants": ["p_paprika"],
-    "row": 1,
-    "col": 2,
-    "layout": [
-      ["Chilli", "Viharez", "Viharez", "Viharez", "Sladká", "Garam"],
-      ["", "Chilli", "Jalapeños", "Viharez", "Sladká", "Garam"],
-      ["Garam", "Garam", "Garam", "Garam", "Garam", "Garam"]
-    ]
-  },
-  {
     "id": "b_paprika_vonku",
     "name": "Paprika vonku",
     "type": "open",
     "plants": ["p_paprika"],
-    "row": 1,
-    "col": 1,
+    "row": 1, "col": 1, "rowspan": 2,
     "layout": [
       ["Chilli", "Chilli", "Chilli", "Chilli", "Kapia", "Kapia", "Sladká", "Viharez", "Viharez", "Viharez", "Viharez", "Viharez", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam"],
       ["Chilli", "Chilli", "Chilli", "Chilli", "Kapia", "Kapia", "Sladká", "Viharez", "Viharez", "Viharez", "Viharez", "Viharez", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam", "Garam"]
@@ -29,10 +15,21 @@
     "name": "Rajčiny I",
     "type": "open",
     "plants": ["p_rajciny"],
-    "row": 2,
-    "col": 1,
+    "row": 1, "col": 2, "rowspan": 2,
     "layout": [
       ["Cherry", "Cherry", "Cherry", "Striped Roman", "Spencer", "Spencer", "Spencer", "Tigrella", "Tigrella", "Marzano", "Marzano", "Melónová", "Cerice žltá", "Cerice žltá", "Cerice žltá"]
+    ]
+  },
+  {
+    "id": "b_paprika_folia",
+    "name": "Paprika vo fólii",
+    "type": "foil",
+    "plants": ["p_paprika"],
+    "row": 1, "col": 3,
+    "layout": [
+      ["Chilli", "Viharez", "Viharez", "Viharez", "Sladká", "Garam"],
+      ["", "Chilli", "Jalapeños", "Viharez", "Sladká", "Garam"],
+      ["Garam", "Garam", "Garam", "Garam", "Garam", "Garam"]
     ]
   },
   {
@@ -40,8 +37,7 @@
     "name": "Rajčiny II",
     "type": "open",
     "plants": ["p_rajciny"],
-    "row": 2,
-    "col": 2,
+    "row": 2, "col": 3,
     "layout": [
       ["Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1", "Start F1"],
       ["Sonet", "Sonet", "Sonet", "Primavera", "Primavera", "Primavera", "Tornado", "Tornado", "Tornado"],

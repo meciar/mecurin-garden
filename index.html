@@ -1675,26 +1675,18 @@ function renderMap() {
     return;
   }
 
-  // Determine grid dimensions
-  const maxRow = Math.max(...beds.map(b => b.row));
   const maxCol = Math.max(...beds.map(b => b.col));
+  const maxRow = Math.max(...beds.map(b => b.row + (b.rowspan || 1) - 1));
 
-  // Build grid rows
-  let gridHtml = '';
-  for (let r = 1; r <= maxRow; r++) {
-    const rowBeds = beds.filter(b => b.row === r).sort((a, b) => a.col - b.col);
-    // Fill missing columns with empty slots
-    const slots = [];
-    for (let c = 1; c <= maxCol; c++) {
-      const bed = rowBeds.find(b => b.col === c);
-      slots.push(bed ? renderBed(bed) : '<div></div>');
-    }
-    gridHtml += slots.join('');
-  }
+  const gridHtml = beds.map(bed => {
+    const rowspan = bed.rowspan || 1;
+    const style = `grid-column:${bed.col}; grid-row:${bed.row} / span ${rowspan};`;
+    return renderBed(bed, style);
+  }).join('');
 
   el.innerHTML = `
     <div class="garden-wrap">
-      <div class="garden-grid" style="grid-template-columns: repeat(${maxCol}, 1fr);">
+      <div class="garden-grid" style="grid-template-columns: repeat(${maxCol}, 1fr); grid-template-rows: repeat(${maxRow}, auto);">
         ${gridHtml}
       </div>
       <div class="map-legend">
@@ -1739,7 +1731,7 @@ function varietyBg(name) {
   return `hsl(${Math.abs(hash) % 360}, 52%, 38%)`;
 }
 
-function renderBed(bed) {
+function renderBed(bed, extraStyle = '') {
   const icon = (bed.plants || []).map(id => {
     const p = plants.find(pl => pl.id === id);
     return p ? p.icon : '🌱';
@@ -1771,7 +1763,7 @@ function renderBed(bed) {
   }
 
   return `
-    <div class="bed-plot ${bed.type || 'open'}">
+    <div class="bed-plot ${bed.type || 'open'}" style="${extraStyle}">
       <div class="bed-label">
         <span class="bed-icon">${icon}</span>
         <span class="bed-name">${bed.name}</span>
